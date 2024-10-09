@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Stage, Layer, Rect, Circle, Transformer, Text } from 'react-konva';
 import Toolbar from './Toolbar';
+import axios from 'axios';
+
 
 const MainKonva = () => {
   const [shapes, setShapes] = useState([]);
@@ -9,6 +11,7 @@ const MainKonva = () => {
   const [annotationsVisible, setAnnotationsVisible] = useState(true);
   const transformerRef = useRef(null);
   const stageRef = useRef(null);
+  const apiUrl = import.meta.env.VITE_BASE_URL;
 
   // Add new shape based on tool selection
   const handleMouseDown = (e) => {
@@ -147,6 +150,22 @@ const MainKonva = () => {
     });
   };
 
+
+  // Save drawing to the Django API
+  const saveDrawing = async () => {
+    const drawingData = {
+      title: "My Drawing",
+      data: shapes,
+    };
+
+    try {
+      const response = await axios.post(`${apiUrl}/trackdraw/api/drawings/`, drawingData);
+      console.log('Drawing saved successfully:', response.data);
+    } catch (error) {
+      console.error('Error saving drawing:', error);
+    }
+  };
+
   return (
     <div>
       <Toolbar
@@ -165,6 +184,7 @@ const MainKonva = () => {
           <Transformer ref={transformerRef} />
         </Layer>
       </Stage>
+      <button onClick={saveDrawing}>Save Drawing</button>
     </div>
   );
 };
